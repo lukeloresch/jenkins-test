@@ -1,0 +1,20 @@
+def project = "${REPO_NAME}"
+def branchApi = new URL("https://api.github.com/repos/${project}/branches")
+def branches = new groovy.json.JsonSlurper().parse(branchApi.newReader())
+def branchName = branches[0].name
+def jobName = "${project}-${branchName}".replaceAll('/','-')
+multibranchPipelineJob(jobName) {
+  branchSources {
+    git {
+	remote('https://github.com/lukeloresch/jenkins-test.git')
+	    credentialsId('GH_PAT')
+   	    includes('v*-*')
+   	    displayName(jobName)
+    }
+  }
+  orphanedItemStrategy {
+  	discardOldItems {
+    	numToKeep(20)
+    }
+  }
+}
